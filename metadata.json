@@ -1,0 +1,7 @@
+{
+  "name": "Yummaris Smart Tahfidz2",
+  "description": "A comprehensive Quran memorization application with specialized study modes (Full, First Word, Hidden) to facilitate the Tahfidz process, featuring audio recitations and a progress submission system.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
