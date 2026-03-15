@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply bg-slate-900 text-slate-100;
+  font-family: 'Poppins', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@font-face {
+  font-family: 'KFGQPC Uthmanic Script HAFS';
+  src: url('https://cdn.jsdelivr.net/gh/nicholasyager/quran-fonts@master/fonts/KFGQPC-Uthmanic-Script-HAFS/UthmanicHafs_v22.woff2') format('woff2');
+}
+
+.mushaf-container {
+  perspective: 1000px;
+  padding: 20px 0;
+}
+
+.mushaf-page {
+  background-color: #fffaf3;
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+  border: 18px solid transparent;
+  border-image-source: url('https://www.transparenttextures.com/patterns/pinstripe.png');
+  border-style: solid;
+  border-image-slice: 30;
+  border-image-repeat: round;
+  border-color: #701a1a;
+  outline: 4px double #d4af37;
+  outline-offset: -12px;
+  padding: 40px 50px;
+  position: relative;
+  aspect-ratio: 1 / 1.55;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.arabic-container {
+  direction: rtl;
+  text-align: justify;
+  text-justify: inter-word;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background-image: linear-gradient(#eee 1px, transparent 1px);
+  background-size: 100% 6.666%;
+  background-position: 0 0;
+}
+
+.arabic-text-flow {
+  font-family: 'KFGQPC Uthmanic Script HAFS', 'Amiri', serif;
+  line-height: 2.15;
+  font-size: 2.25rem;
+  color: #1a1a1a;
+  word-spacing: 4px;
+}
+
+@media (max-width: 768px) {
+  .mushaf-page {
+    padding: 25px 20px;
+    border-width: 10px;
+    outline-width: 2px;
+    outline-offset: -6px;
+  }
+  .arabic-text-flow {
+    font-size: 1.45rem;
+    line-height: 2.15;
+  }
+}
+
+.ayah-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0 8px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 5 L95 50 L50 95 L5 50 Z" fill="none" stroke="%23701a1a" stroke-width="3"/><circle cx="50" cy="50" r="30" fill="none" stroke="%23d4af37" stroke-width="2"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #701a1a;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
+.ayah-blur {
+  filter: blur(14px);
+  user-select: none;
+  transition: filter 0.4s ease;
+  display: inline;
+}
+
+.ayah-blur:hover {
+  filter: blur(0px);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 4px;
+}

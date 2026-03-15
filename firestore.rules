@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: username
+    // Fields:
+    //   - username: string (required)
+    //   - password: string (required)
+    //   - identitas: string (required)
+    //   - role: string (admin, user, teacher)
+    //
+    // Collection: submissions
+    // Document ID: auto-generated
+    // Fields:
+    //   - participant_id: string (required)
+    //   - surah: string (required)
+    //   - ayah: int (required)
+    //   - created_at: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "pakonigurusejati@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isValidUser(data) {
+      return data.username is string && data.username.size() > 0 &&
+             data.password is string && data.password.size() > 0 &&
+             data.identitas is string &&
+             data.role in ['admin', 'user', 'teacher'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{username} {
+      // Required for custom login system
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidUser(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    match /classes/{className} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /teacher_classes/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

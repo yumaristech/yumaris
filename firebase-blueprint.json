@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account for the Tahfidz app",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string", "description": "Unique username" },
+        "password": { "type": "string", "description": "Account password" },
+        "identitas": { "type": "string", "description": "Full name or ID" },
+        "role": { "type": "string", "enum": ["admin", "user", "teacher"] },
+        "class_name": { "type": "string", "description": "Assigned class" }
+      },
+      "required": ["username", "password", "identitas", "role"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Tahfidz submission record",
+      "type": "object",
+      "properties": {
+        "participant_id": { "type": "string" },
+        "surah": { "type": "string" },
+        "ayah": { "type": "integer" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["participant_id", "surah", "ayah", "created_at"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "Class definition",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "TeacherClass": {
+      "title": "TeacherClass",
+      "description": "Mapping between teacher and class",
+      "type": "object",
+      "properties": {
+        "teacher_username": { "type": "string" },
+        "class_name": { "type": "string" }
+      },
+      "required": ["teacher_username", "class_name"]
+    }
+  },
+  "firestore": {
+    "/users/{username}": {
+      "schema": "User",
+      "description": "User accounts"
+    },
+    "/submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Student submissions"
+    },
+    "/classes/{className}": {
+      "schema": "Class",
+      "description": "List of classes"
+    },
+    "/teacher_classes/{id}": {
+      "schema": "TeacherClass",
+      "description": "Teacher class assignments"
+    }
+  }
+}
