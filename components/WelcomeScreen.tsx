@@ -40,7 +40,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             </h2>
             
             <p className="text-emerald-100/70 text-sm md:text-lg font-medium leading-relaxed max-w-xs md:max-w-md mx-auto">
-              Tingkatkan kualitas hafalan Anda dengan teknologi cerdas dan murottal Qari Al-Hussary.
+              Tingkatkan kualitas hafalan Anda dengan teknologi cerdas dan murottal Syeikh Mahmud Khalil al-Hussary.
             </p>
           </div>
 
