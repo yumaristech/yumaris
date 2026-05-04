@@ -35,7 +35,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
             </div>
             
             <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
-              YUMMARIS<br/>
+              YUMARIS<br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-300">SMART TAHFIDZ</span>
             </h2>
             

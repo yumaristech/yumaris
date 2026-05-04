@@ -414,7 +414,7 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, initialPage, onOpenS
             {/* Footer Halaman */}
             <div className="mt-auto pt-8 border-t-2 border-red-900/10 flex flex-col items-center gap-2">
               <div className="text-[10px] text-red-900/30 font-black tracking-[0.4em] uppercase">
-                YUMMARIS SMART TAHFIDZ • 15 BARIS STANDAR
+                YUMARIS SMART TAHFIDZ • 15 BARIS STANDAR
               </div>
               <div className="text-[8px] text-emerald-600/40 italic">
                 Rasm Utsmani • Mujamma' al-Malik Fahd

@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ onHome, onAdmin, onTeacher, onProgress,
             <span className="text-xl md:text-2xl">📖</span>
           </div>
           <div>
-            <h1 className="text-lg md:text-2xl font-bold tracking-wide">YUMMARIS</h1>
+            <h1 className="text-lg md:text-2xl font-bold tracking-wide">YUMARIS</h1>
             <p className="text-green-100 text-[10px] md:text-sm">Smart Tahfidz Platform</p>
           </div>
         </div>

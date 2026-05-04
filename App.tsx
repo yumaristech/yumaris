@@ -66,7 +66,7 @@ const App: React.FC = () => {
   // Cek session saat mount
   useEffect(() => {
     try {
-      const session = localStorage.getItem('yummaris_session');
+      const session = localStorage.getItem('yumaris_session');
       if (session) {
         const { username, role, identitas } = JSON.parse(session);
         setIsLoggedIn(true);
@@ -78,7 +78,7 @@ const App: React.FC = () => {
       }
     } catch (error) {
       console.error('Session restoration failed:', error);
-      localStorage.removeItem('yummaris_session');
+      localStorage.removeItem('yumaris_session');
     }
   }, []);
 
@@ -88,7 +88,7 @@ const App: React.FC = () => {
     setIsTeacher(role === 'teacher');
     setCurrentUser(username);
     setParticipantId(identitas);
-    localStorage.setItem('yummaris_session', JSON.stringify({ username, role, identitas }));
+    localStorage.setItem('yumaris_session', JSON.stringify({ username, role, identitas }));
     setScreen('welcome');
   };
 
@@ -115,7 +115,7 @@ const App: React.FC = () => {
     setIsTeacher(false);
     setCurrentUser(null);
     setParticipantId(null);
-    localStorage.removeItem('yummaris_session');
+    localStorage.removeItem('yumaris_session');
     setScreen('login');
     showToast('Berhasil keluar', 'info');
   };
@@ -153,7 +153,7 @@ const App: React.FC = () => {
       showToast('✓ Hafalan berhasil disetor!', 'success');
       setShowSetorModal(false);
       // Save user ID for next time
-      localStorage.setItem('yummaris_user', participantId);
+      localStorage.setItem('yumaris_user', participantId);
       setCurrentUser(participantId);
     } catch (error) {
       console.error('Firestore submission error:', error);

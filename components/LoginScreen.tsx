@@ -98,7 +98,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
             <span className="text-4xl select-none">📖</span>
           </div>
           <h2 className="text-3xl font-black text-white text-center">
-            YUMMARIS<br/>
+            YUMARIS<br/>
             <span className="text-emerald-400">SMART TAHFIDZ</span>
           </h2>
         </div>
