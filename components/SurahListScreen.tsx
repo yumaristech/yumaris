@@ -11,7 +11,13 @@ const SurahListScreen: React.FC<SurahListScreenProps> = ({ surahs, onSelectSurah
   const [search, setSearch] = useState('');
   const [juzFilter, setJuzFilter] = useState('');
 
+  const isNumericSearch = useMemo(() => {
+    const num = parseInt(search);
+    return !isNaN(num) && num >= 1 && num <= 604;
+  }, [search]);
+
   const filteredSurahs = useMemo(() => {
+    if (isNumericSearch) return [];
     return surahs.filter(s => {
       const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
                           s.number.toString() === search ||
@@ -19,7 +25,18 @@ const SurahListScreen: React.FC<SurahListScreenProps> = ({ surahs, onSelectSurah
       const matchJuz = juzFilter === '' || s.juz === parseInt(juzFilter);
       return matchSearch && matchJuz;
     });
-  }, [surahs, search, juzFilter]);
+  }, [surahs, search, juzFilter, isNumericSearch]);
+
+  const handlePageSelect = () => {
+    const pageNum = parseInt(search);
+    if (pageNum >= 1 && pageNum <= 604) {
+      // For simplicity, we navigate to the first surah and let ReaderScreen handle the page jump
+      // We'll pass a special property if we can, or modify App.tsx
+      // Actually, let's just find the surah that starts before or at that page if we could
+      // But since we don't have the mapping, we'll use a placeholder and App.tsx will handle it
+      (onSelectSurah as any)({ number: 0, name: 'Halaman', page: pageNum });
+    }
+  };
 
   return (
     <div className="h-full flex flex-col p-4 md:p-8 animate-fade-in overflow-hidden">
@@ -31,8 +48,8 @@ const SurahListScreen: React.FC<SurahListScreenProps> = ({ surahs, onSelectSurah
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
               <input 
                 type="text" 
-                placeholder="Cari surat (contoh: Al-Baqarah atau 2)..." 
-                className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all shadow-sm"
+                placeholder="Cari berdasarkan halaman (contoh: 5)..." 
+                className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all shadow-sm font-medium"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -51,7 +68,20 @@ const SurahListScreen: React.FC<SurahListScreenProps> = ({ surahs, onSelectSurah
         </div>
 
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-          {filteredSurahs.length > 0 ? (
+          {isNumericSearch ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div 
+                onClick={handlePageSelect}
+                className="group bg-white rounded-3xl p-10 shadow-xl border-2 border-emerald-100 cursor-pointer transition-all hover:border-emerald-500 hover:shadow-emerald-900/10 max-w-sm w-full animate-bounce-in"
+              >
+                <div className="w-20 h-20 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-6 shadow-lg shadow-emerald-500/30">
+                  {search}
+                </div>
+                <h3 className="text-2xl font-black text-gray-800 mb-2">Buka Halaman {search}</h3>
+                <p className="text-gray-500 font-medium">Klik untuk langsung menuju mushaf halaman {search}</p>
+              </div>
+            </div>
+          ) : filteredSurahs.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-8">
               {filteredSurahs.map((surah) => (
                 <div 

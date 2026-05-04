@@ -23,8 +23,10 @@ const App: React.FC = () => {
   const [participantId, setParticipantId] = useState<string | null>(null);
   const [screen, setScreen] = useState<ScreenState>('login');
   const [selectedSurah, setSelectedSurah] = useState<Surah | null>(null);
+  const [initialPage, setInitialPage] = useState<number | null>(null);
   const [showSetorModal, setShowSetorModal] = useState(false);
   const [setorAyah, setSetorAyah] = useState<number | null>(null);
+  const [setorSurahName, setSetorSurahName] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -104,6 +106,7 @@ const App: React.FC = () => {
       setScreen('welcome');
     }
     setSelectedSurah(null);
+    setInitialPage(null);
   };
 
   const handleLogout = () => {
@@ -118,23 +121,31 @@ const App: React.FC = () => {
   };
 
   const handleSelectSurah = (surah: Surah) => {
-    setSelectedSurah(surah);
+    if ((surah as any).page) {
+      setInitialPage((surah as any).page);
+      // Use a neutral surah placeholder while page data loads
+      setSelectedSurah({ ...SURAH_LIST[0], name: 'Halaman', arabic: '...' });
+    } else {
+      setSelectedSurah(surah);
+      setInitialPage(null);
+    }
     setScreen('reader');
   };
 
-  const handleOpenSetor = (ayahNumber: number) => {
+  const handleOpenSetor = (ayahNumber: number, surahName: string) => {
     setSetorAyah(ayahNumber);
+    setSetorSurahName(surahName);
     setShowSetorModal(true);
   };
 
   const handleSubmitSetor = async (participantId: string) => {
-    if (!selectedSurah || !setorAyah) return;
+    if (!setorSurahName || setorAyah === null) return;
 
     try {
       // Send to Firestore
       await addDoc(collection(db, 'submissions'), {
         participant_id: participantId,
-        surah: selectedSurah.name,
+        surah: setorSurahName,
         ayah: setorAyah,
         created_at: serverTimestamp()
       });
@@ -183,6 +194,7 @@ const App: React.FC = () => {
           {isLoggedIn && screen === 'reader' && selectedSurah && (
             <ReaderScreen 
               surah={selectedSurah} 
+              initialPage={initialPage}
               onOpenSetor={handleOpenSetor}
               showToast={showToast}
             />
@@ -213,9 +225,9 @@ const App: React.FC = () => {
           )}
         </main>
 
-        {showSetorModal && selectedSurah && setorAyah && (
+        {showSetorModal && setorSurahName && setorAyah !== null && (
           <SetorModal 
-            surahName={selectedSurah.name}
+            surahName={setorSurahName}
             ayahNumber={setorAyah}
             defaultId={participantId || ''}
             onClose={() => setShowSetorModal(false)}

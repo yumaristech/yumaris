@@ -1,23 +1,40 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Surah, Ayah, DisplayMode } from '../types';
+import { SURAH_LIST } from '../constants';
 
 interface ReaderScreenProps {
   surah: Surah;
-  onOpenSetor: (ayahNumber: number) => void;
+  initialPage?: number | null;
+  onOpenSetor: (ayahNumber: number, surahName: string) => void;
   showToast: (msg: string, type?: 'info' | 'success' | 'error') => void;
 }
 
-const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, onOpenSetor, showToast }) => {
+const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, initialPage, onOpenSetor, showToast }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [loading, setLoading] = useState(true);
   const [displayMode, setDisplayMode] = useState<DisplayMode>('full');
   const [activeAudio, setActiveAudio] = useState<string | null>(null);
   const [activeAyahId, setActiveAyahId] = useState<number | null>(null);
+  const [isPlaylistPlaying, setIsPlaylistPlaying] = useState(false);
+  const [playlistIndex, setPlaylistIndex] = useState(0);
   
   // Fitur Rentang Ayat
   const [range, setRange] = useState({ start: 1, end: surah.verses });
+
+  // Update range when surah changes or ayahs load
+  useEffect(() => {
+    if (ayahs.length > 0 && ayahs[0].surah) {
+      const apiSurah = ayahs[0].surah;
+      const fullSurah = SURAH_LIST.find(s => s.number === apiSurah.number);
+      if (fullSurah) {
+        setRange(prev => ({ ...prev, end: fullSurah.verses }));
+      }
+    } else {
+      setRange(prev => ({ ...prev, end: surah.verses }));
+    }
+  }, [ayahs, surah]);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -30,8 +47,12 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, onOpenSetor, showToa
     }).join('');
   };
 
-  // Inisialisasi halaman berdasarkan surah yang dipilih
+  // Inisialisasi halaman berdasarkan surah yang dipilih atau initialPage
   useEffect(() => {
+    if (initialPage) {
+      setCurrentPage(initialPage);
+      return;
+    }
     const fetchStartPage = async () => {
       try {
         const res = await fetch(`https://api.alquran.cloud/v1/surah/${surah.number}`);
@@ -45,7 +66,7 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, onOpenSetor, showToa
       }
     };
     fetchStartPage();
-  }, [surah.number]);
+  }, [surah.number, initialPage]);
 
   // Load data halaman setiap kali currentPage berubah
   useEffect(() => {
@@ -85,6 +106,11 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, onOpenSetor, showToa
   };
 
   const toggleAudio = (url: string, ayahId: number) => {
+    // Jika sedang playlist, matikan playlist
+    if (isPlaylistPlaying) {
+      setIsPlaylistPlaying(false);
+    }
+
     if (activeAudio === url) {
       audioRef.current?.pause();
       setActiveAudio(null);
@@ -100,6 +126,69 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, onOpenSetor, showToa
     }
   };
 
+  const playPageAudio = () => {
+    if (ayahs.length === 0) return;
+    
+    // Cari index pertama yang tidak out of range
+    let startIndex = ayahs.findIndex(a => {
+      const isOutOfRange = (a.surah?.number === surah.number) && 
+                           (a.numberInSurah < range.start || a.numberInSurah > range.end);
+      return !isOutOfRange;
+    });
+
+    if (startIndex === -1) {
+      showToast('Tidak ada ayat dalam rentang yang bisa diputar', 'info');
+      return;
+    }
+
+    setIsPlaylistPlaying(true);
+    setPlaylistIndex(startIndex);
+    
+    const firstAyah = ayahs[startIndex];
+    if (audioRef.current) {
+      audioRef.current.src = firstAyah.audio;
+      audioRef.current.play();
+      setActiveAudio(firstAyah.audio);
+      setActiveAyahId(firstAyah.numberInSurah);
+      showToast(`🔊 Memulai Pemutaran Halaman ${currentPage}...`);
+    }
+  };
+
+  const stopPlaylist = () => {
+    setIsPlaylistPlaying(false);
+    audioRef.current?.pause();
+    setActiveAudio(null);
+    setActiveAyahId(null);
+  };
+
+  const handleSetorPage = () => {
+    if (ayahs.length === 0) return;
+    
+    const juz = ayahs[0].juz;
+    const groups: { [key: number]: { name: string; min: number; max: number } } = {};
+    
+    ayahs.forEach(ayah => {
+      const apiSurahNum = ayah.surah?.number || surah.number;
+      if (!groups[apiSurahNum]) {
+        groups[apiSurahNum] = { 
+          name: ayah.surah?.englishName || surah.name, 
+          min: ayah.numberInSurah, 
+          max: ayah.numberInSurah 
+        };
+      } else {
+        groups[apiSurahNum].min = Math.min(groups[apiSurahNum].min, ayah.numberInSurah);
+        groups[apiSurahNum].max = Math.max(groups[apiSurahNum].max, ayah.numberInSurah);
+      }
+    });
+
+    const surahListText = Object.entries(groups).map(([num, g]) => 
+      `Surat ${num} ayat ${g.min === g.max ? g.min : `${g.min}-${g.max}`}`
+    ).join(', ');
+
+    const summary = `Hal ${currentPage} Juz ${juz} ${surahListText}`;
+    onOpenSetor(0, summary);
+  };
+
   const cleanAyahText = (ayah: Ayah) => {
     if (ayah.numberInSurah === 1 && ayah.surah?.number !== 1 && ayah.surah?.number !== 9) {
       return ayah.text.replace(/^(بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ|بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ)/, '').trim();
@@ -109,7 +198,45 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, onOpenSetor, showToa
 
   return (
     <div className="h-full flex flex-col overflow-hidden animate-fade-in bg-slate-900">
-      <audio ref={audioRef} onEnded={() => { setActiveAudio(null); setActiveAyahId(null); }} className="hidden" />
+      <audio 
+        ref={audioRef} 
+        onEnded={() => { 
+          if (isPlaylistPlaying) {
+            const nextIndex = playlistIndex + 1;
+            // Cari index selanjutnya yang tidak out of range
+            let foundNext = -1;
+            for (let i = nextIndex; i < ayahs.length; i++) {
+              const a = ayahs[i];
+              const isOutOfRange = (a.surah?.number === surah.number) && 
+                                   (a.numberInSurah < range.start || a.numberInSurah > range.end);
+              if (!isOutOfRange) {
+                foundNext = i;
+                break;
+              }
+            }
+
+            if (foundNext !== -1 && foundNext < ayahs.length) {
+              setPlaylistIndex(foundNext);
+              const nextAyah = ayahs[foundNext];
+              if (audioRef.current) {
+                audioRef.current.src = nextAyah.audio;
+                audioRef.current.play();
+                setActiveAudio(nextAyah.audio);
+                setActiveAyahId(nextAyah.numberInSurah);
+              }
+            } else {
+              setIsPlaylistPlaying(false);
+              setActiveAudio(null); 
+              setActiveAyahId(null);
+              showToast('✅ Pemutaran halaman selesai');
+            }
+          } else {
+            setActiveAudio(null); 
+            setActiveAyahId(null); 
+          }
+        }} 
+        className="hidden" 
+      />
       
       {/* Control Bar Terintegrasi */}
       <div className="bg-white/10 backdrop-blur-xl border-b border-white/10 p-4 z-30 flex-shrink-0">
@@ -168,6 +295,26 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, onOpenSetor, showToa
                 {mode === 'full' ? 'Lengkap' : mode === 'first' ? 'Awal Ayat' : 'Setoran'}
               </button>
             ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={isPlaylistPlaying ? stopPlaylist : playPageAudio}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg active:scale-95 ${
+                isPlaylistPlaying 
+                  ? 'bg-rose-600 text-white animate-pulse' 
+                  : 'bg-emerald-500 text-white hover:bg-emerald-400'
+              }`}
+            >
+              <span>{isPlaylistPlaying ? '⏹' : '▶'} Hal</span>
+            </button>
+            <button
+              onClick={handleSetorPage}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-black uppercase tracking-widest text-[10px] bg-amber-500 text-white hover:bg-amber-400 transition-all shadow-lg active:scale-95"
+            >
+              <span>📝 Setor Hal</span>
+            </button>
           </div>
         </div>
       </div>
@@ -241,7 +388,13 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, onOpenSetor, showToa
                           className={`ayah-marker group relative ${isSubmissionMode ? 'cursor-pointer' : 'cursor-default'}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (isSubmissionMode && !isOutOfRange) onOpenSetor(ayah.numberInSurah);
+                            if (isSubmissionMode && !isOutOfRange) {
+                              // Get actual surah based on the ayah's surah number
+                              const apiSurahNum = ayah.surah?.number || surah.number;
+                              const actualSurah = SURAH_LIST.find(s => s.number === apiSurahNum);
+                              const actualSurahName = actualSurah ? actualSurah.name : surah.name;
+                              onOpenSetor(ayah.numberInSurah, actualSurahName);
+                            }
                           }}
                         >
                           {toArabicNumerals(ayah.numberInSurah)}

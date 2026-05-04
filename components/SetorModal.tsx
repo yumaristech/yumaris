@@ -56,10 +56,12 @@ const SetorModal: React.FC<SetorModalProps> = ({ surahName, ayahNumber, defaultI
               <span className="text-gray-500 font-medium">Surat:</span>
               <span className="font-bold text-green-800">{surahName}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 font-medium">Target Ayat:</span>
-              <span className="font-bold text-green-800">Ayat {ayahNumber}</span>
-            </div>
+            {ayahNumber !== 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500 font-medium">Target Ayat:</span>
+                <span className="font-bold text-green-800">Ayat {ayahNumber}</span>
+              </div>
+            )}
           </div>
           
           <div className="flex gap-3 pt-2">
