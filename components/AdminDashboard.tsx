@@ -44,6 +44,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
   const [editingUsername, setEditingUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isClassLoading, setIsClassLoading] = useState(false);
+  const [userSearch, setUserSearch] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -211,6 +212,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
     }
   };
 
+  const filteredUsers = React.useMemo(() => {
+    return users.filter(user => 
+      user.username.toLowerCase().includes(userSearch.toLowerCase()) || 
+      user.identitas.toLowerCase().includes(userSearch.toLowerCase())
+    );
+  }, [users, userSearch]);
+
   return (
     <div className="h-full w-full flex flex-col p-4 md:p-8 bg-slate-900 overflow-y-auto custom-scrollbar animate-fade-in">
       <div className="max-w-5xl mx-auto w-full space-y-8">
@@ -349,14 +357,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
 
           {/* List Section */}
           <div className="lg:col-span-7 bg-white rounded-[32px] p-8 shadow-2xl border border-green-50">
-            <h3 className="text-xl font-black text-green-800 mb-6 flex items-center gap-2">
-              <span>📋</span> Daftar Pengguna
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <h3 className="text-xl font-black text-green-800 flex items-center gap-2">
+                <span>📋</span> Daftar Pengguna
+              </h3>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">🔍</span>
+                <input 
+                  type="text"
+                  placeholder="Cari nama atau ID..."
+                  className="pl-8 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:border-green-500 focus:outline-none transition-all w-full sm:w-48"
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                />
+              </div>
+            </div>
             <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-              {users.length === 0 && !isLoading && (
-                <p className="text-center text-gray-400 py-10">Belum ada pengguna.</p>
+              {filteredUsers.length === 0 && !isLoading && (
+                <p className="text-center text-gray-400 py-10">
+                  {userSearch ? 'Tidak ada pengguna yang cocok.' : 'Belum ada pengguna.'}
+                </p>
               )}
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <div key={user.username} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
                   editingUsername === user.username ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-100' : 'bg-gray-50 border-gray-100'
                 }`}>
