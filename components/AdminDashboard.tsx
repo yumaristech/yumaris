@@ -25,6 +25,7 @@ interface UserData {
   identitas: string;
   role: 'admin' | 'user' | 'teacher';
   class_name?: string;
+  whatsapp?: string;
 }
 
 interface ClassData {
@@ -37,6 +38,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [identitas, setIdentitas] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [role, setRole] = useState<'admin' | 'user' | 'teacher'>('user');
   const [selectedClass, setSelectedClass] = useState('');
   const [teacherClasses, setTeacherClasses] = useState<string[]>([]);
@@ -95,6 +97,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
         username: cleanUsername,
         password: cleanPassword, 
         identitas: cleanIdentitas,
+        whatsapp: whatsapp.trim(),
         role: role,
         class_name: role === 'user' ? selectedClass : null
       };
@@ -138,6 +141,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
     setUsername('');
     setPassword('');
     setIdentitas('');
+    setWhatsapp('');
     setRole('user');
     setSelectedClass('');
     setTeacherClasses([]);
@@ -149,6 +153,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
     setUsername(user.username);
     setPassword(user.password);
     setIdentitas(user.identitas);
+    setWhatsapp(user.whatsapp || '');
     setRole(user.role || 'user');
     setSelectedClass(user.class_name || '');
 
@@ -281,6 +286,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
                 />
               </div>
               <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">No. WhatsApp Wali (Contoh: 6281234...)</label>
+                <input 
+                  type="text" 
+                  className="w-full px-5 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium"
+                  placeholder="628xxxxxxxxxx"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value.replace(/[^0-9]/g, ''))}
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Role</label>
                 <select 
                   className="w-full px-5 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium bg-white"
@@ -393,6 +409,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
                     <div>
                       <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Identitas</p>
                       <p className="font-bold text-emerald-700 truncate">{user.identitas}</p>
+                      {user.whatsapp && (
+                        <p className="text-[9px] text-green-600 font-bold flex items-center gap-1 mt-0.5">
+                          <span>📱</span> {user.whatsapp}
+                        </p>
+                      )}
                       <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[8px] font-black uppercase ${
                         user.role === 'admin' ? 'bg-amber-100 text-amber-700' : 
                         user.role === 'teacher' ? 'bg-purple-100 text-purple-700' : 

@@ -20,6 +20,7 @@ interface Student {
   username: string;
   identitas: string;
   class_name: string;
+  whatsapp?: string;
 }
 
 interface Submission {
@@ -37,6 +38,19 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingProgress, setIsFetchingProgress] = useState(false);
+
+  // Weekly Report States
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportData, setReportData] = useState({
+    tambahanMinggu: '',
+    totalHafalan: '',
+    murojaah: '',
+    setoranTerakhir: '',
+    kelancaran: 'Baik',
+    fasohah: 'Baik',
+    kedisiplinan: 'Baik',
+    adab: 'Baik'
+  });
 
   useEffect(() => {
     fetchTeacherData();
@@ -111,6 +125,37 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
       hour: '2-digit',
       minute: '2-digit'
     }).format(date);
+  };
+
+  const handleSendReport = () => {
+    if (!selectedStudent || !selectedStudent.whatsapp) {
+      showToast('No WhatsApp wali tidak ditemukan untuk siswa ini', 'error');
+      return;
+    }
+
+    const message = `Assalamualaikum Wr. Wb. 
+Kepada yang terhormat
+Wali santri ${selectedStudent.username}
+Saya Pembina Program Tahfidz Ananda memberikan informasi terkait laporan mingguan sebagai berikut
+
+Tambahan Hafalan Minggu ini : ${reportData.tambahanMinggu} Halaman
+Total Hafalan keseluruhan : ${reportData.totalHafalan} halaman
+Murojaah : ${reportData.murojaah} Juz
+Setoran terakhir : Juz ${reportData.setoranTerakhir}
+Kelancaran : ${reportData.kelancaran}
+Fasohah : ${reportData.fasohah}
+Kedisiplinan : ${reportData.kedisiplinan}
+Adab dan Karakter : ${reportData.adab}
+
+Demikian laporan mingguan ini kami sampaikan. Jazakumullahu khairan atas dukungan dan kerja samanya dalam mendampingi ananda dalam program ini.
+Atas perhatiannya, Saya ucapakan terimakasih ☺️🙏🏻
+Wa'alaikumsalam Wr. Wb.`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const waUrl = `https://wa.me/${selectedStudent.whatsapp}?text=${encodedMessage}`;
+    window.open(waUrl, '_blank');
+    setShowReportModal(false);
+    showToast('Laporan dikirim ke WhatsApp', 'success');
   };
 
   return (
@@ -204,6 +249,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
                   <div className="px-4 py-2 bg-purple-50 rounded-xl border border-purple-100">
                     <span className="text-purple-700 font-bold text-sm">Total: {submissions.length} Setoran</span>
                   </div>
+                  <button 
+                    onClick={() => setShowReportModal(true)}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg active:scale-95"
+                  >
+                    <span>📄</span> Buat Laporan Mingguan
+                  </button>
                 </div>
 
                 {isFetchingProgress ? (
@@ -266,6 +317,105 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
           </div>
         </div>
       </div>
+
+      {/* Weekly Report Modal */}
+      {showReportModal && selectedStudent && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-[40px] w-full max-w-lg p-8 shadow-2xl relative border-t-8 border-green-500 my-8">
+            <button 
+              onClick={() => setShowReportModal(false)}
+              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all text-xl"
+            >
+              ✕
+            </button>
+            
+            <div className="mb-8 text-center pt-4">
+              <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 border-2 border-green-100">
+                📝
+              </div>
+              <h2 className="text-2xl font-black text-gray-800 tracking-tight">Laporan Mingguan</h2>
+              <p className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mt-1">Siswa: {selectedStudent.username}</p>
+            </div>
+
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tambahan (Halaman)</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium"
+                    placeholder="Contoh: 1.5"
+                    value={reportData.tambahanMinggu}
+                    onChange={(e) => setReportData({...reportData, tambahanMinggu: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Total Hafalan (Halaman)</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium"
+                    placeholder="Contoh: 10"
+                    value={reportData.totalHafalan}
+                    onChange={(e) => setReportData({...reportData, totalHafalan: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Murojaah (Juz)</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium"
+                    placeholder="Contoh: 30"
+                    value={reportData.murojaah}
+                    onChange={(e) => setReportData({...reportData, murojaah: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Setoran Terakhir (Juz)</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium"
+                    placeholder="Contoh: 30"
+                    value={reportData.setoranTerakhir}
+                    onChange={(e) => setReportData({...reportData, setoranTerakhir: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              {['kelancaran', 'fasohah', 'kedisiplinan', 'adab'].map((field) => (
+                <div key={field}>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                    {field === 'adab' ? 'Adab dan Karakter' : field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <select 
+                    className="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium bg-white"
+                    value={(reportData as any)[field]}
+                    onChange={(e) => setReportData({...reportData, [field]: e.target.value})}
+                  >
+                    <option value="Sangat Baik">Sangat Baik</option>
+                    <option value="Baik">Baik</option>
+                    <option value="Cukup">Cukup</option>
+                    <option value="Perlu Bimbingan">Perlu Bimbingan</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+            
+            <div className="pt-8">
+              <button 
+                onClick={handleSendReport}
+                className="w-full flex items-center justify-center gap-3 py-5 bg-green-600 hover:bg-green-700 text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-xl shadow-green-200 transition-all active:scale-95 group"
+              >
+                <span>SEND TO WHATSAPP</span>
+                <span className="group-hover:translate-x-2 transition-transform">📱</span>
+              </button>
+              <p className="text-center text-[10px] text-gray-400 font-bold mt-4 uppercase tracking-widest">Wali: {selectedStudent.username} • {selectedStudent.whatsapp || 'No WA Kosong'}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
