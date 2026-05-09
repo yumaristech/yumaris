@@ -38,6 +38,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingProgress, setIsFetchingProgress] = useState(false);
+  const [teacherIdentity, setTeacherIdentity] = useState<string>('');
 
   // Weekly Report States
   const [showReportModal, setShowReportModal] = useState(false);
@@ -61,6 +62,14 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
   const fetchTeacherData = async () => {
     setIsLoading(true);
     try {
+      // Fetch teacher info
+      const qUser = query(collection(db, 'users'), where('username', '==', teacherUsername));
+      const userSnapshot = await getDocs(qUser);
+      if (!userSnapshot.empty) {
+        const userData = userSnapshot.docs[0].data();
+        setTeacherIdentity(userData.identitas || teacherUsername);
+      }
+
       // 1. Fetch assigned classes
       const qClasses = query(collection(db, 'teacher_classes'), where('teacher_username', '==', teacherUsername));
       const classSnapshot = await getDocs(qClasses);
@@ -135,12 +144,22 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
       return;
     }
 
+    // Format dates for display
+    const formatDateStr = (dateStr: string) => {
+      if (!dateStr) return '...';
+      const [year, month, day] = dateStr.split('-');
+      return `${day}-${month}-${year}`;
+    };
+
+    const displayStart = formatDateStr(reportData.startDate);
+    const displayEnd = formatDateStr(reportData.endDate);
+
     const message = `Assalamualaikum Wr. Wb.
 
 Kepada yang terhormat
 Wali santri Ananda *${selectedStudent.identitas}*
 
-Saya Pembina Program Tahfidz Ananda memberikan informasi terkait laporan mingguan periode *${reportData.startDate} s/d ${reportData.endDate}* sebagai berikut
+Saya Pembina Program Tahfidz Ananda memberikan informasi terkait laporan mingguan periode *${displayStart} s/d ${displayEnd}* sebagai berikut
 
 Tambahan Hafalan Minggu ini : *${reportData.tambahanMinggu}* Halaman
 Total Hafalan keseluruhan : *${reportData.totalHafalan}* halaman
@@ -154,7 +173,10 @@ Adab dan Karakter : *${reportData.adab}*
 Demikian laporan mingguan ini kami sampaikan. Jazakumullahu khairan atas dukungan dan kerja samanya dalam mendampingi ananda dalam program ini.
 Atas perhatiannya, Saya ucapakan terimakasih ☺️🙏🏻
 
-Wa'alaikumsalam Wr. Wb.`;
+Wa'alaikumsalam Wr. Wb.
+
+Pembina Tahfidzul Qur'an Yumaris
+*${teacherIdentity || teacherUsername}*`;
 
     const encodedMessage = encodeURIComponent(message);
     const waUrl = `https://wa.me/${selectedStudent.whatsapp}?text=${encodedMessage}`;
@@ -351,9 +373,8 @@ Wa'alaikumsalam Wr. Wb.`;
                   <div>
                     <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Dari Tanggal</label>
                     <input 
-                      type="text" 
+                      type="date" 
                       className="w-full px-4 py-2.5 border-2 border-white rounded-xl focus:border-green-500 focus:outline-none transition-all font-medium text-sm shadow-sm"
-                      placeholder="dd-mm-yyyy"
                       value={reportData.startDate}
                       onChange={(e) => setReportData({...reportData, startDate: e.target.value})}
                     />
@@ -361,9 +382,8 @@ Wa'alaikumsalam Wr. Wb.`;
                   <div>
                     <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Sampai Tanggal</label>
                     <input 
-                      type="text" 
+                      type="date" 
                       className="w-full px-4 py-2.5 border-2 border-white rounded-xl focus:border-green-500 focus:outline-none transition-all font-medium text-sm shadow-sm"
-                      placeholder="dd-mm-yyyy"
                       value={reportData.endDate}
                       onChange={(e) => setReportData({...reportData, endDate: e.target.value})}
                     />
