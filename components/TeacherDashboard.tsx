@@ -135,17 +135,17 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
 
     const message = `Assalamualaikum Wr. Wb. 
 Kepada yang terhormat
-Wali santri ${selectedStudent.username}
+Wali santri Ananda *${selectedStudent.identitas}*
 Saya Pembina Program Tahfidz Ananda memberikan informasi terkait laporan mingguan sebagai berikut
 
-Tambahan Hafalan Minggu ini : ${reportData.tambahanMinggu} Halaman
-Total Hafalan keseluruhan : ${reportData.totalHafalan} halaman
-Murojaah : ${reportData.murojaah} Juz
-Setoran terakhir : Juz ${reportData.setoranTerakhir}
-Kelancaran : ${reportData.kelancaran}
-Fasohah : ${reportData.fasohah}
-Kedisiplinan : ${reportData.kedisiplinan}
-Adab dan Karakter : ${reportData.adab}
+Tambahan Hafalan Minggu ini : *${reportData.tambahanMinggu}* Halaman
+Total Hafalan keseluruhan : *${reportData.totalHafalan}* halaman
+Murojaah : *${reportData.murojaah}* Juz
+Setoran terakhir : Juz *${reportData.setoranTerakhir}*
+Kelancaran : *${reportData.kelancaran}*
+Fasohah : *${reportData.fasohah}*
+Kedisiplinan : *${reportData.kedisiplinan}*
+Adab dan Karakter : *${reportData.adab}*
 
 Demikian laporan mingguan ini kami sampaikan. Jazakumullahu khairan atas dukungan dan kerja samanya dalam mendampingi ananda dalam program ini.
 Atas perhatiannya, Saya ucapakan terimakasih ☺️🙏🏻
