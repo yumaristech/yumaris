@@ -52,7 +52,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
     kelancaran: 'Baik',
     fasohah: 'Baik',
     kedisiplinan: 'Baik',
-    adab: 'Baik'
+    adab: 'Baik',
+    catatan: ''
   });
 
   useEffect(() => {
@@ -159,7 +160,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
 Kepada yang terhormat
 Wali santri Ananda *${selectedStudent.identitas}*
 
-Saya Pembina Program Tahfidz Ananda memberikan informasi terkait laporan mingguan periode *${displayStart} s/d ${displayEnd}* sebagai berikut
+Saya Pembina Program Tahfidz Ananda memberikan informasi terkait laporan mingguan periode *${displayStart} s/d ${displayEnd}* sebagai berikut:
 
 Tambahan Hafalan Minggu ini : *${reportData.tambahanMinggu}* Halaman
 Total Hafalan keseluruhan : *${reportData.totalHafalan}* halaman
@@ -169,6 +170,7 @@ Kelancaran : *${reportData.kelancaran}*
 Fasohah : *${reportData.fasohah}*
 Kedisiplinan : *${reportData.kedisiplinan}*
 Adab dan Karakter : *${reportData.adab}*
+Catatan : *${reportData.catatan || '-'}*
 
 Demikian laporan mingguan ini kami sampaikan. Jazakumullahu khairan atas dukungan dan kerja samanya dalam mendampingi ananda dalam program ini.
 Atas perhatiannya, Saya ucapakan terimakasih ☺️🙏🏻
@@ -454,6 +456,16 @@ Pembina Tahfidzul Qur'an Yumaris
                   </select>
                 </div>
               ))}
+
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Catatan Tambahan</label>
+                <textarea 
+                  className="w-full px-4 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium min-h-[100px] resize-none"
+                  placeholder="Contoh: Ananda sangat bersemangat minggu ini..."
+                  value={reportData.catatan}
+                  onChange={(e) => setReportData({...reportData, catatan: e.target.value})}
+                />
+              </div>
             </div>
             
             <div className="pt-8">
