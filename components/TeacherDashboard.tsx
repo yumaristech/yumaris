@@ -162,21 +162,21 @@ Wa'alaikumsalam Wr. Wb.`;
     <div className="h-full w-full flex flex-col p-4 md:p-8 bg-slate-900 overflow-y-auto custom-scrollbar animate-fade-in">
       <div className="max-w-6xl mx-auto w-full space-y-8">
         
-        <div className="flex items-center justify-between bg-white/10 backdrop-blur-xl p-6 rounded-[32px] border border-white/10">
-          <div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between bg-white/10 backdrop-blur-xl p-6 rounded-[32px] border border-white/10 gap-6">
+          <div className="text-center md:text-left">
             <h2 className="text-2xl font-black text-white">👨‍🏫 Teacher Dashboard</h2>
             <p className="text-purple-400 text-xs font-bold uppercase tracking-widest mt-1">Monitoring Progres Hafalan Siswa</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center justify-center md:justify-end gap-3 w-full md:w-auto">
             <button 
               onClick={onBack}
-              className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-bold transition-all"
+              className="flex-1 md:flex-none px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-white/5 active:scale-95"
             >
               Kembali
             </button>
             <button 
               onClick={onLogout}
-              className="px-6 py-2 bg-red-500/20 hover:bg-red-500/40 text-white rounded-xl text-sm font-bold transition-all border border-red-500/30"
+              className="flex-1 md:flex-none px-6 py-2.5 bg-red-500/20 hover:bg-red-500/40 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-red-500/30 active:scale-95"
             >
               Keluar
             </button>
@@ -239,22 +239,24 @@ Wa'alaikumsalam Wr. Wb.`;
           <div className="lg:col-span-8 bg-white rounded-[32px] p-8 shadow-2xl border border-purple-50">
             {selectedStudent ? (
               <>
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                   <div>
                     <h3 className="text-xl font-black text-purple-800 flex items-center gap-2">
                       <span>📊</span> Progres: {selectedStudent.username}
                     </h3>
                     <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">ID: {selectedStudent.identitas}</p>
                   </div>
-                  <div className="px-4 py-2 bg-purple-50 rounded-xl border border-purple-100">
-                    <span className="text-purple-700 font-bold text-sm">Total: {submissions.length} Setoran</span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="px-4 py-2 bg-purple-50 rounded-xl border border-purple-100">
+                      <span className="text-purple-700 font-bold text-sm">Total: {submissions.length} Setoran</span>
+                    </div>
+                    <button 
+                      onClick={() => setShowReportModal(true)}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg shadow-green-100 active:scale-95"
+                    >
+                      <span>📄</span> Buat Laporan Mingguan
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => setShowReportModal(true)}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg active:scale-95"
-                  >
-                    <span>📄</span> Buat Laporan Mingguan
-                  </button>
                 </div>
 
                 {isFetchingProgress ? (
@@ -334,7 +336,7 @@ Wa'alaikumsalam Wr. Wb.`;
                 📝
               </div>
               <h2 className="text-2xl font-black text-gray-800 tracking-tight">Laporan Mingguan</h2>
-              <p className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mt-1">Siswa: {selectedStudent.username}</p>
+              <p className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em] mt-1">Ananda: {selectedStudent.identitas}</p>
             </div>
 
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
