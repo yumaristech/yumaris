@@ -68,19 +68,19 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
         showToast('Login Berhasil!', 'success');
         const userRole = data.role || 'user';
 
-        // Support for custom Administrator accounts to have write permissions
+        // Support for custom Administrator and Teacher accounts to have write permissions
         // by signing them in Anonymously to Firebase Auth
-        if (userRole === 'admin') {
+        if (userRole === 'admin' || userRole === 'teacher') {
           try {
             const authResult = await signInAnonymously(auth);
             // Record this session for Firestore Rules access control
             await setDoc(doc(db, 'active_admins', authResult.user.uid), {
               username: normalizedUsername,
-              role: 'admin',
+              role: userRole,
               timestamp: new Date()
             });
           } catch (authErr) {
-            console.error('Admin session activation error:', authErr);
+            console.error('Session activation error:', authErr);
             // We continue even if auth fails, but permissions might be limited
           }
         }

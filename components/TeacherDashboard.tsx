@@ -6,7 +6,9 @@ import {
   getDocs, 
   query, 
   where, 
-  orderBy 
+  orderBy,
+  deleteDoc,
+  doc
 } from 'firebase/firestore';
 
 interface TeacherDashboardProps {
@@ -124,6 +126,22 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
       showToast('Gagal mengambil progres siswa', 'error');
     } finally {
       setIsFetchingProgress(false);
+    }
+  };
+
+  const handleDeleteSubmission = async (submissionId: string) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus riwayat setoran ini?')) return;
+    
+    try {
+      await deleteDoc(doc(db, 'submissions', submissionId));
+      showToast('Setoran berhasil dihapus', 'success');
+      // Refresh the progress list
+      if (selectedStudent) {
+        fetchStudentProgress(selectedStudent);
+      }
+    } catch (err) {
+      console.error('Error deleting submission:', err);
+      showToast('Gagal menghapus setoran. Pastikan Anda memiliki izin.', 'error');
     }
   };
 
@@ -307,6 +325,7 @@ Pembina Tahfidzul Qur'an Yumaris
                           <th className="py-4 px-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Surah</th>
                           <th className="py-4 px-2 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Ayat</th>
                           <th className="py-4 px-2 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Waktu Setor</th>
+                          <th className="py-4 px-2"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
@@ -326,6 +345,15 @@ Pembina Tahfidzul Qur'an Yumaris
                             </td>
                             <td className="py-3 px-2 text-right">
                               <span className="text-xs font-medium text-gray-500">{formatDate(item.created_at)}</span>
+                            </td>
+                            <td className="py-3 px-2 text-right">
+                              <button 
+                                onClick={() => handleDeleteSubmission(item.id.toString())}
+                                className="p-2 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-100 shadow-sm"
+                                title="Hapus Setoran"
+                              >
+                                🗑️
+                              </button>
                             </td>
                           </tr>
                         ))}
