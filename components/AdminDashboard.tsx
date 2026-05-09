@@ -46,12 +46,53 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
   const [editingUsername, setEditingUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isClassLoading, setIsClassLoading] = useState(false);
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [isSubmissionsLoading, setIsSubmissionsLoading] = useState(false);
   const [userSearch, setUserSearch] = useState('');
+  const [submissionSearch, setSubmissionSearch] = useState('');
 
   useEffect(() => {
     fetchUsers();
     fetchClasses();
+    fetchSubmissions();
   }, []);
+
+  const fetchSubmissions = async () => {
+    try {
+      setIsSubmissionsLoading(true);
+      const q = query(collection(db, 'submissions'), orderBy('timestamp', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setSubmissions(data);
+    } catch (err) {
+      console.error('Error fetching submissions:', err);
+    } finally {
+      setIsSubmissionsLoading(false);
+    }
+  };
+
+  const handleDeleteSubmission = async (id: string) => {
+    if (window.confirm('Hapus riwayat setoran ini?')) {
+      try {
+        await deleteDoc(doc(db, 'submissions', id));
+        showToast('Setoran berhasil dihapus', 'success');
+        fetchSubmissions();
+      } catch (err) {
+        showToast('Gagal menghapus setoran', 'error');
+      }
+    }
+  };
+
+  const filteredSubmissions = React.useMemo(() => {
+    return submissions.filter(s => 
+      s.student_username?.toLowerCase().includes(submissionSearch.toLowerCase()) || 
+      s.student_identitas?.toLowerCase().includes(submissionSearch.toLowerCase()) ||
+      s.juz?.toString().includes(submissionSearch)
+    );
+  }, [submissions, submissionSearch]);
 
   const fetchClasses = async () => {
     setIsClassLoading(true);
@@ -231,7 +272,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
         <div className="flex items-center justify-between bg-white/10 backdrop-blur-xl p-6 rounded-[32px] border border-white/10">
           <div>
             <h2 className="text-2xl font-black text-white">🛡️ Admin Dashboard</h2>
-            <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mt-1">Manajemen Pengguna & Identitas (Supabase)</p>
+            <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest mt-1">Manajemen Pengguna, Kelas & Riwayat</p>
           </div>
           <button 
             onClick={onBack}
@@ -250,15 +291,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Username</label>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Username {editingUsername && '(Tidak bisa diubah)'}</label>
                 <input 
                   type="text" 
-                  className="w-full px-5 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium"
+                  className={`w-full px-5 py-3 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:outline-none transition-all font-medium ${editingUsername ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''}`}
                   placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || !!editingUsername}
                 />
               </div>
               <div>
@@ -444,6 +485,83 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack, showToast }) =>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Submissions Management Section */}
+        <div className="bg-white rounded-[32px] p-8 shadow-2xl border border-green-50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <h3 className="text-xl font-black text-green-800 flex items-center gap-2">
+              <span>📋</span> Riwayat Setoran Siswa
+            </h3>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">🔍</span>
+              <input 
+                type="text"
+                placeholder="Cari Siswa atau Juz..."
+                className="pl-8 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:border-green-500 focus:outline-none transition-all w-full sm:w-64"
+                value={submissionSearch}
+                onChange={(e) => setSubmissionSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="pb-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Siswa</th>
+                  <th className="pb-3 text-[10px] font-black text-gray-400 uppercase tracking-widest px-4">Detail</th>
+                  <th className="pb-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Waktu</th>
+                  <th className="pb-3 text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {isSubmissionsLoading ? (
+                  <tr>
+                    <td colSpan={4} className="py-10 text-center text-gray-400">Memuat data...</td>
+                  </tr>
+                ) : filteredSubmissions.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-10 text-center text-gray-400">Tidak ada riwayat setoran.</td>
+                  </tr>
+                ) : filteredSubmissions.map((s) => (
+                  <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="py-4">
+                      <p className="font-bold text-gray-800 text-sm">{s.student_username}</p>
+                      <p className="text-[10px] text-emerald-600 font-black tracking-widest uppercase">{s.student_identitas || '-'}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">Juz {s.juz}</span>
+                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-bold">Hal {s.halaman}</span>
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">{s.surah}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 whitespace-nowrap">
+                      <p className="text-[10px] text-gray-400 font-medium">
+                        {s.timestamp?.toDate ? new Intl.DateTimeFormat('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }).format(s.timestamp.toDate()) : '-'}
+                      </p>
+                    </td>
+                    <td className="py-4 text-right">
+                      <button 
+                        onClick={() => handleDeleteSubmission(s.id)}
+                        className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-all"
+                        title="Hapus"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 

@@ -12,7 +12,7 @@ import AdminDashboard from './components/AdminDashboard';
 import ProgressScreen from './components/ProgressScreen';
 import TeacherDashboard from './components/TeacherDashboard';
 import ErrorBoundary from './components/ErrorBoundary';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { collection, addDoc, serverTimestamp, doc, getDocFromServer } from 'firebase/firestore';
 
 const App: React.FC = () => {
@@ -116,6 +116,10 @@ const App: React.FC = () => {
     setCurrentUser(null);
     setParticipantId(null);
     localStorage.removeItem('yumaris_session');
+    
+    // Clear Firebase Auth session (for custom admin write permissions)
+    auth.signOut().catch(error => console.error("Firebase signOut error:", error));
+    
     setScreen('login');
     showToast('Berhasil keluar', 'info');
   };

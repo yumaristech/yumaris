@@ -8,7 +8,7 @@ interface LoginScreenProps {
 
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) => {
   const [username, setUsername] = useState('');
@@ -31,9 +31,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      if (user.email === 'pakonigurusejati@gmail.com') {
+      
+      // Check if user is the designated owner or already in admins collection
+      if (result.user.email === 'pakonigurusejati@gmail.com') {
         showToast('Login Admin (Google) Berhasil!', 'success');
         onLoginSuccess('admin', 'admin', 'OWNER-01');
       } else {
@@ -67,6 +67,24 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
       if (data.password === password) {
         showToast('Login Berhasil!', 'success');
         const userRole = data.role || 'user';
+
+        // Support for custom Administrator accounts to have write permissions
+        // by signing them in Anonymously to Firebase Auth
+        if (userRole === 'admin') {
+          try {
+            const authResult = await signInAnonymously(auth);
+            // Record this session for Firestore Rules access control
+            await setDoc(doc(db, 'active_admins', authResult.user.uid), {
+              username: normalizedUsername,
+              role: 'admin',
+              timestamp: new Date()
+            });
+          } catch (authErr) {
+            console.error('Admin session activation error:', authErr);
+            // We continue even if auth fails, but permissions might be limited
+          }
+        }
+
         onLoginSuccess(normalizedUsername, userRole, data.identitas);
       } else {
         showToast('Username atau Password salah', 'error');
@@ -138,16 +156,19 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
         </form>
 
         {showAdminLogin && (
-          <div className="mt-6 flex flex-col items-center gap-4 animate-fade-in">
+          <div className="mt-8 flex flex-col items-center gap-4 animate-fade-in">
             <div className="w-full h-px bg-white/10"></div>
             <button 
               onClick={handleGoogleLogin}
               disabled={isLoading}
-              className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold text-sm border border-white/10 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+              className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold text-sm border border-white/10 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 shadow-inner"
             >
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
               Login Pemilik (Google)
             </button>
+            <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest text-center px-4">
+              *Gunakan Google Login untuk fitur manajemen tingkat tinggi
+            </p>
           </div>
         )}
         
