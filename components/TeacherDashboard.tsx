@@ -42,6 +42,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
   // Weekly Report States
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportData, setReportData] = useState({
+    startDate: '',
+    endDate: '',
     tambahanMinggu: '',
     totalHafalan: '',
     murojaah: '',
@@ -133,10 +135,12 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
       return;
     }
 
-    const message = `Assalamualaikum Wr. Wb. 
+    const message = `Assalamualaikum Wr. Wb.
+
 Kepada yang terhormat
 Wali santri Ananda *${selectedStudent.identitas}*
-Saya Pembina Program Tahfidz Ananda memberikan informasi terkait laporan mingguan sebagai berikut
+
+Saya Pembina Program Tahfidz Ananda memberikan informasi terkait laporan mingguan periode *${reportData.startDate} s/d ${reportData.endDate}* sebagai berikut
 
 Tambahan Hafalan Minggu ini : *${reportData.tambahanMinggu}* Halaman
 Total Hafalan keseluruhan : *${reportData.totalHafalan}* halaman
@@ -149,6 +153,7 @@ Adab dan Karakter : *${reportData.adab}*
 
 Demikian laporan mingguan ini kami sampaikan. Jazakumullahu khairan atas dukungan dan kerja samanya dalam mendampingi ananda dalam program ini.
 Atas perhatiannya, Saya ucapakan terimakasih ☺️🙏🏻
+
 Wa'alaikumsalam Wr. Wb.`;
 
     const encodedMessage = encodeURIComponent(message);
@@ -340,6 +345,32 @@ Wa'alaikumsalam Wr. Wb.`;
             </div>
 
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Periode Laporan</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Dari Tanggal</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-4 py-2.5 border-2 border-white rounded-xl focus:border-green-500 focus:outline-none transition-all font-medium text-sm shadow-sm"
+                      placeholder="dd-mm-yyyy"
+                      value={reportData.startDate}
+                      onChange={(e) => setReportData({...reportData, startDate: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Sampai Tanggal</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-4 py-2.5 border-2 border-white rounded-xl focus:border-green-500 focus:outline-none transition-all font-medium text-sm shadow-sm"
+                      placeholder="dd-mm-yyyy"
+                      value={reportData.endDate}
+                      onChange={(e) => setReportData({...reportData, endDate: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tambahan (Halaman)</label>
