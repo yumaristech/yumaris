@@ -8,6 +8,7 @@ import ReaderScreen from './components/ReaderScreen';
 import Header from './components/Header';
 import SetorModal from './components/SetorModal';
 import LoginScreen from './components/LoginScreen';
+import LandingPage from './components/LandingPage';
 import AdminDashboard from './components/AdminDashboard';
 import ProgressScreen from './components/ProgressScreen';
 import TeacherDashboard from './components/TeacherDashboard';
@@ -21,7 +22,7 @@ const App: React.FC = () => {
   const [isTeacher, setIsTeacher] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [participantId, setParticipantId] = useState<string | null>(null);
-  const [screen, setScreen] = useState<ScreenState>('login');
+  const [screen, setScreen] = useState<ScreenState>('landing');
   const [selectedSurah, setSelectedSurah] = useState<Surah | null>(null);
   const [initialPage, setInitialPage] = useState<number | null>(null);
   const [showSetorModal, setShowSetorModal] = useState(false);
@@ -126,7 +127,7 @@ const App: React.FC = () => {
     // Clear Firebase Auth session (for custom admin write permissions)
     auth.signOut().catch(error => console.error("Firebase signOut error:", error));
     
-    setScreen('login');
+    setScreen('landing');
     showToast('Berhasil keluar', 'info');
   };
 
@@ -186,13 +187,24 @@ const App: React.FC = () => {
           />
         )}
         
-        <main className="flex-1 overflow-hidden relative">
+        <main className="flex-1 overflow-y-auto relative custom-scrollbar">
+          {screen === 'landing' && (
+            <LandingPage onStart={() => setScreen('login')} />
+          )}
+
           {screen === 'login' && (
-            <LoginScreen onLoginSuccess={handleLoginSuccess} showToast={showToast} />
+            <LoginScreen 
+              onLoginSuccess={handleLoginSuccess} 
+              showToast={showToast} 
+              onBack={() => setScreen('landing')}
+            />
           )}
 
           {isLoggedIn && screen === 'welcome' && (
-            <WelcomeScreen onStart={handleStart} />
+            <WelcomeScreen 
+              onStart={handleStart} 
+              participantId={participantId}
+            />
           )}
           
           {isLoggedIn && screen === 'surah-list' && (

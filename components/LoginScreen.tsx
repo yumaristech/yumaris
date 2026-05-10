@@ -4,13 +4,15 @@ import React, { useState } from 'react';
 interface LoginScreenProps {
   onLoginSuccess: (username: string, role: string, identitas: string) => void;
   showToast: (msg: string, type: 'success' | 'error') => void;
+  onBack?: () => void;
 }
 
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
 import { doc, getDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { ArrowLeft } from 'lucide-react';
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast, onBack }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -112,7 +114,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
 
   return (
     <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 p-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-[40px] p-10 shadow-2xl animate-bounce-in">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-[40px] p-10 shadow-2xl animate-bounce-in relative">
+        {onBack && (
+          <button 
+            onClick={onBack}
+            className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all active:scale-95 group border border-white/5 hover:border-white/20"
+            title="Kembali ke Beranda"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-xs font-bold uppercase tracking-widest">Kembali</span>
+          </button>
+        )}
         <div className="flex flex-col items-center mb-10">
           <div 
             onClick={handleLogoClick}
