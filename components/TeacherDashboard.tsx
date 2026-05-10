@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 import { 
   collection, 
   getDocs, 
@@ -130,18 +130,26 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ teacherUsername, on
   };
 
   const handleDeleteSubmission = async (submissionId: string) => {
+    if (!submissionId) return;
     if (!window.confirm('Apakah Anda yakin ingin menghapus riwayat setoran ini?')) return;
     
     try {
+      setIsFetchingProgress(true);
       await deleteDoc(doc(db, 'submissions', submissionId));
       showToast('Setoran berhasil dihapus', 'success');
       // Refresh the progress list
       if (selectedStudent) {
-        fetchStudentProgress(selectedStudent);
+        await fetchStudentProgress(selectedStudent);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting submission:', err);
-      showToast('Gagal menghapus setoran. Pastikan Anda memiliki izin.', 'error');
+      try {
+        handleFirestoreError(err, OperationType.DELETE, `submissions/${submissionId}`);
+      } catch (rulesErr: any) {
+        showToast(`Gagal menghapus: ${rulesErr.message.includes('permission') ? 'Izin ditolak' : 'Gagal sistem'}`, 'error');
+      }
+    } finally {
+      setIsFetchingProgress(false);
     }
   };
 

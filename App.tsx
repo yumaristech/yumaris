@@ -93,12 +93,18 @@ const App: React.FC = () => {
   };
 
   const handleStart = () => setScreen('surah-list');
-  const handleViewProgress = () => setScreen('progress');
+  const handleViewProgress = () => {
+    if (isAdmin) {
+      setScreen('admin-submissions');
+    } else {
+      setScreen('progress');
+    }
+  };
   const handleAdmin = () => setScreen('admin');
   const handleTeacher = () => setScreen('teacher');
   
   const handleHome = () => {
-    if (screen === 'reader' || screen === 'progress' || screen === 'teacher') {
+    if (screen === 'reader' || screen === 'progress' || screen === 'teacher' || screen === 'admin-submissions') {
       setScreen('surah-list');
     } else if (screen === 'surah-list' || screen === 'admin') {
       setScreen('welcome');
@@ -176,6 +182,7 @@ const App: React.FC = () => {
             onProgress={handleViewProgress}
             onLogout={handleLogout}
             showHome={screen !== 'welcome'} 
+            isAdmin={isAdmin}
           />
         )}
         
@@ -208,6 +215,15 @@ const App: React.FC = () => {
             <AdminDashboard 
               onBack={handleHome}
               showToast={showToast}
+              activeTab="management"
+            />
+          )}
+
+          {isLoggedIn && screen === 'admin-submissions' && isAdmin && (
+            <AdminDashboard 
+              onBack={handleHome}
+              showToast={showToast}
+              activeTab="submissions"
             />
           )}
 

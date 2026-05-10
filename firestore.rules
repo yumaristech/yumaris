@@ -35,6 +35,7 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && (
         (request.auth.token.email == "pakonigurusejati@gmail.com" && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/authorized_admins/$(request.auth.token.email)) ||
         exists(/databases/$(database)/documents/active_admins/$(request.auth.uid))
       );
     }
@@ -46,6 +47,7 @@ service cloud.firestore {
              data.password.size() <= 100 &&
              data.identitas is string && data.identitas.size() <= 100 &&
              data.role in ['admin', 'user', 'teacher'] &&
+             (data.get('email', '') is string) &&
              (data.get('whatsapp', '') is string) &&
              (data.get('class_name', '') == null || data.get('class_name', '') is string);
     }
@@ -64,6 +66,11 @@ service cloud.firestore {
     match /active_admins/{uid} {
       allow read: if true;
       allow write: if isAuthenticated() && request.auth.uid == uid;
+    }
+
+    match /authorized_admins/{email} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /submissions/{submissionId} {

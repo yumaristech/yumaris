@@ -7,8 +7,8 @@ interface LoginScreenProps {
 }
 
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
+import { doc, getDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) => {
   const [username, setUsername] = useState('');
@@ -31,13 +31,25 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
+      const userEmail = result.user.email;
       
-      // Check if user is the designated owner or already in admins collection
-      if (result.user.email === 'pakonigurusejati@gmail.com') {
+      // Check if user is the designated owner
+      if (userEmail === 'pakonigurusejati@gmail.com') {
         showToast('Login Admin (Google) Berhasil!', 'success');
         onLoginSuccess('admin', 'admin', 'OWNER-01');
+        return;
+      }
+
+      // Check if this email is registered in our users collection for a teacher or admin
+      const q = query(collection(db, 'users'), where('email', '==', userEmail));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data();
+        showToast(`Login ${userData.role} Berhasil!`, 'success');
+        onLoginSuccess(userData.username, userData.role, userData.identitas);
       } else {
-        showToast('Akses ditolak. Hanya pemilik yang bisa login via Google.', 'error');
+        showToast('Akses ditolak. Email tidak terdaftar sebagai Guru/Admin.', 'error');
         await auth.signOut();
       }
     } catch (err) {
@@ -68,21 +80,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
         showToast('Login Berhasil!', 'success');
         const userRole = data.role || 'user';
 
-        // Support for custom Administrator and Teacher accounts to have write permissions
-        // by signing them in Anonymously to Firebase Auth
+        // Note: Writing permissions for Teachers and custom Admins in Firestore
+        // usually requires a Firebase Auth session. If signInAnonymously is disabled
+        // in your Firebase Console, these roles will be limited to read-only access.
         if (userRole === 'admin' || userRole === 'teacher') {
-          try {
-            const authResult = await signInAnonymously(auth);
-            // Record this session for Firestore Rules access control
-            await setDoc(doc(db, 'active_admins', authResult.user.uid), {
-              username: normalizedUsername,
-              role: userRole,
-              timestamp: new Date()
-            });
-          } catch (authErr) {
-            console.error('Session activation error:', authErr);
-            // We continue even if auth fails, but permissions might be limited
-          }
+          // We no longer attempt signInAnonymously by default because it might be restricted
+          // by project policies (auth/admin-restricted-operation).
+          // To enable Teacher delete permissions, please enable Anonymous Auth in Firebase Console.
+          console.log('Admin/Teacher role detected. Using custom authorization for dashboard.');
         }
 
         onLoginSuccess(normalizedUsername, userRole, data.identitas);
@@ -155,22 +160,20 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
           </button>
         </form>
 
-        {showAdminLogin && (
-          <div className="mt-8 flex flex-col items-center gap-4 animate-fade-in">
-            <div className="w-full h-px bg-white/10"></div>
-            <button 
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold text-sm border border-white/10 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 shadow-inner"
-            >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-              Login Pemilik (Google)
-            </button>
-            <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest text-center px-4">
-              *Gunakan Google Login untuk fitur manajemen tingkat tinggi
-            </p>
-          </div>
-        )}
+        <div className="mt-8 flex flex-col items-center gap-4">
+          <div className="w-full h-px bg-white/10"></div>
+          <button 
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+            className="w-full py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-sm border border-white/20 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 shadow-lg"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+            Login Pemilik / Guru
+          </button>
+          <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest text-center px-4">
+            *Gunakan Google Login jika ingin menghapus/mengubah data
+          </p>
+        </div>
         
         <p className="mt-8 text-center text-white/30 text-[10px] font-bold uppercase tracking-widest">
           Akses Terbatas • Hubungi Admin

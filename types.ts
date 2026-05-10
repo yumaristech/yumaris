@@ -25,4 +25,4 @@ export interface Ayah {
 
 export type DisplayMode = 'full' | 'first' | 'hidden';
 
-export type ScreenState = 'login' | 'welcome' | 'surah-list' | 'reader' | 'admin' | 'progress' | 'teacher';
+export type ScreenState = 'login' | 'welcome' | 'surah-list' | 'reader' | 'admin' | 'progress' | 'teacher' | 'admin-submissions';

@@ -8,9 +8,10 @@ interface HeaderProps {
   onProgress: () => void;
   onLogout: () => void;
   showHome: boolean;
+  isAdmin?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onHome, onAdmin, onTeacher, onProgress, onLogout, showHome }) => {
+const Header: React.FC<HeaderProps> = ({ onHome, onAdmin, onTeacher, onProgress, onLogout, showHome, isAdmin }) => {
   return (
     <header className="bg-gradient-to-r from-green-700 via-green-600 to-emerald-600 text-white py-4 px-6 shadow-lg flex-shrink-0 z-10">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -36,9 +37,9 @@ const Header: React.FC<HeaderProps> = ({ onHome, onAdmin, onTeacher, onProgress,
           <button 
             onClick={onProgress}
             className="bg-emerald-500/20 hover:bg-emerald-500/40 p-2 rounded-lg transition-all active:scale-95 border border-emerald-500/30"
-            title="Progres Hafalan"
+            title={isAdmin ? "Riwayat Setoran" : "Progres Hafalan"}
           >
-            📊
+            {isAdmin ? "📋" : "📊"}
           </button>
           
           {onTeacher && (
