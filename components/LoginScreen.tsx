@@ -20,7 +20,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
   const handleLogoClick = () => {
     const newCount = clickCount + 1;
     setClickCount(newCount);
-    if (newCount >= 5) {
+    if (newCount >= 7) {
       setShowAdminLogin(true);
       showToast('Mode Admin Aktif', 'success');
     }
@@ -160,20 +160,22 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, showToast }) 
           </button>
         </form>
 
-        <div className="mt-8 flex flex-col items-center gap-4">
-          <div className="w-full h-px bg-white/10"></div>
-          <button 
-            onClick={handleGoogleLogin}
-            disabled={isLoading}
-            className="w-full py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-sm border border-white/20 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 shadow-lg"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-            Login Pemilik / Guru
-          </button>
-          <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest text-center px-4">
-            *Gunakan Google Login jika ingin menghapus/mengubah data
-          </p>
-        </div>
+        {showAdminLogin && (
+          <div className="mt-8 flex flex-col items-center gap-4 animate-fade-in">
+            <div className="w-full h-px bg-white/10"></div>
+            <button 
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-sm border border-white/20 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 shadow-lg"
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+              Login Pemilik / Guru
+            </button>
+            <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest text-center px-4">
+              *Gunakan Google Login jika ingin menghapus/mengubah data
+            </p>
+          </div>
+        )}
         
         <p className="mt-8 text-center text-white/30 text-[10px] font-bold uppercase tracking-widest">
           Akses Terbatas • Hubungi Admin
