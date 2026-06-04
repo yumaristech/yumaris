@@ -25,11 +25,17 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, initialPage, onOpenS
 
   // Update range when surah changes or ayahs load
   useEffect(() => {
-    if (ayahs.length > 0 && ayahs[0].surah) {
-      const apiSurah = ayahs[0].surah;
-      const fullSurah = SURAH_LIST.find(s => s.number === apiSurah.number);
-      if (fullSurah) {
-        setRange(prev => ({ ...prev, end: fullSurah.verses }));
+    if (ayahs.length > 0) {
+      // Check if the current page has the selected surah
+      const hasSelectedSurah = ayahs.some(a => a.surah?.number === surah.number);
+      if (hasSelectedSurah) {
+        setRange(prev => ({ ...prev, end: surah.verses }));
+      } else if (ayahs[0].surah) {
+        const apiSurah = ayahs[0].surah;
+        const fullSurah = SURAH_LIST.find(s => s.number === apiSurah.number);
+        if (fullSurah) {
+          setRange(prev => ({ ...prev, end: fullSurah.verses }));
+        }
       }
     } else {
       setRange(prev => ({ ...prev, end: surah.verses }));
