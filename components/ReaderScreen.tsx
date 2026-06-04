@@ -127,7 +127,11 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, initialPage, onOpenS
         audioRef.current.play();
         setActiveAudio(url);
         setActiveAyahId(ayahId);
-        showToast(`🔊 Memutar Ayat ${ayahId}...`);
+        if (ayahId < 0) {
+          showToast(`🔊 Memutar Bismillah...`);
+        } else {
+          showToast(`🔊 Memutar Ayat ${ayahId}...`);
+        }
       }
     }
   };
@@ -342,7 +346,11 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, initialPage, onOpenS
               </div>
               <div className="text-center bg-red-900/5 px-6 py-1 rounded-full border border-red-900/10">
                 <span className="text-xl md:text-2xl" style={{ fontFamily: 'Amiri' }}>
-                  سُورَةُ {ayahs[0]?.surah?.name || surah.name}
+                  {ayahs[0]?.surah?.name 
+                    ? (ayahs[0].surah.name.includes('سورة') || ayahs[0].surah.name.includes('سُورَة')
+                        ? ayahs[0].surah.name 
+                        : `سُورَةُ ${ayahs[0].surah.name}`)
+                    : `سُورَةُ ${surah.arabic || surah.name}`}
                 </span>
               </div>
               <div className="flex flex-col items-end">
@@ -368,9 +376,24 @@ const ReaderScreen: React.FC<ReaderScreenProps> = ({ surah, initialPage, onOpenS
                   return (
                     <React.Fragment key={ayah.number}>
                       {needsBismillah && (
-                        <div className="w-full text-center my-8 py-5 border-y-2 border-red-900/5 bg-red-900/[0.02] block rounded-sm">
-                          <span className="text-3xl md:text-5xl text-gray-900 block" style={{ direction: 'rtl', fontFamily: 'KFGQPC Uthmanic Script HAFS' }}>
+                        <div 
+                          className={`w-full text-center my-6 py-5 border-y-2 rounded-xl cursor-pointer transition-all duration-300 relative group/bismillah ${
+                            activeAyahId === -(ayah.surah?.number || 0)
+                              ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-100 text-emerald-800'
+                              : 'border-red-900/5 bg-red-900/[0.02] hover:bg-emerald-50/40 hover:border-emerald-200 text-gray-900'
+                          }`}
+                          onClick={() => {
+                            if (ayah.surah?.number) {
+                              toggleAudio('https://cdn.alquran.cloud/media/audio/ayah/ar.husary/1', -ayah.surah.number);
+                            }
+                          }}
+                          title="Klik untuk memutar Bismillah"
+                        >
+                          <span className="text-3xl md:text-5xl block" style={{ direction: 'rtl', fontFamily: 'KFGQPC Uthmanic Script HAFS' }}>
                             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                          </span>
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/bismillah:opacity-100 transition-opacity text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider shadow-sm z-20">
+                            {activeAyahId === -(ayah.surah?.number || 0) ? '⏸ Jeda' : '▶ Putar'}
                           </span>
                         </div>
                       )}
